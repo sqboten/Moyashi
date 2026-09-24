@@ -199,12 +199,18 @@ public class PlayerAttack : MonoBehaviour
         {
             Enemy enemy = hitTarget.GetComponent<Enemy>();
 
-            if (enemy == null)
+            if (enemy != null)
             {
+                enemy.TakeDamage(_playerStats.AttackPower);
                 continue;
             }
 
-            enemy.TakeDamage(_playerStats.AttackPower);
+            Boss boss = hitTarget.GetComponent<Boss>();
+
+            if (boss != null)
+            {
+                boss.TakeDamage(_playerStats.AttackPower);
+            }
         }
     }
     private void OnDrawGizmosSelected()
