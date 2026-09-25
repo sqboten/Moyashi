@@ -15,9 +15,9 @@ public class WaveManager : MonoBehaviour
     [SerializeField] private EnemySpawner enemySpawner;
     [SerializeField] private GameObject bossPrefab;
 
-    [Header("Boss Spawn")]
+/*    [Header("Boss Spawn")]
     [SerializeField] private Transform bossSpawnPoint;
-
+*/
     private int currentWave = 1;
     private float waveTimer;
 
@@ -92,16 +92,14 @@ public class WaveManager : MonoBehaviour
             return;
         }
 
-        Vector3 spawnPosition;
+        if (enemySpawner == null)
+        {
+            Debug.LogError("EnemySpawnerÇ™ê›íËÇ≥ÇÍÇƒÇ¢Ç‹ÇπÇÒÅB");
+            return;
+        }
 
-        if (bossSpawnPoint != null)
-        {
-            spawnPosition = bossSpawnPoint.position;
-        }
-        else
-        {
-            spawnPosition = transform.position;
-        }
+        Vector3 spawnPosition =
+            enemySpawner.GetBossSpawnPosition();
 
         currentBoss = Instantiate(
             bossPrefab,
@@ -109,7 +107,8 @@ public class WaveManager : MonoBehaviour
             Quaternion.identity
         );
 
-        Boss boss = currentBoss.GetComponent<Boss>();
+        Boss boss =
+            currentBoss.GetComponent<Boss>();
 
         if (boss != null)
         {

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
@@ -17,6 +18,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float parryDuration = 0.3f;
     [SerializeField] private float parryStaminaCost = 15f;
 
+    [Header("Spin Attack")]
+    [SerializeField] private float spinAttackStaminaCost = 20f;
+    [SerializeField] private float spinAttackDuration = 0.5f;
     public bool IsParrying => _isParrying;
     private Rigidbody _rigidbody;
     private PlayerInputActions _inputActions;
@@ -27,6 +31,8 @@ public class PlayerController : MonoBehaviour
     private PlayerStats _playerStats;
 
     private SkillManager _skillManager;
+
+    private SpinAttack _spinAttack;
 
     private bool _isDodging;
     private float _dodgeTimer;
@@ -46,6 +52,7 @@ public class PlayerController : MonoBehaviour
         _playerAttack = GetComponent<PlayerAttack>();
         _playerStats = GetComponent<PlayerStats>();
         _skillManager = FindFirstObjectByType<SkillManager>();
+        _spinAttack = GetComponent<SpinAttack>();
     }
 
     private void OnEnable()
@@ -77,6 +84,7 @@ public class PlayerController : MonoBehaviour
                 EndDodge();
             }
         }
+        //ƒpƒŠƒB
         if (_inputActions.Player.Parry.WasPressedThisFrame())
         {
             StartParry();
@@ -90,12 +98,23 @@ public class PlayerController : MonoBehaviour
                 EndParry();
             }
         }
+        //‰ñ“]Ø‚è
+        if (_inputActions.Player.SpinAttack.WasPressedThisFrame())
+        {
+            StartSpinAttack();
+        }
     }
     private void FixedUpdate()
     {
         if (_isDodging)
         {
             DodgeMove();
+            return;
+        }
+
+        if (_spinAttack != null && _spinAttack.IsSpinning)
+        {
+            _rigidbody.linearVelocity = Vector3.zero;
             return;
         }
 
@@ -280,5 +299,38 @@ public class PlayerController : MonoBehaviour
         _isParrying = false;
 
         Debug.Log("Parry End");
+    }
+    private void StartSpinAttack()
+    {
+        Debug.Log("‡@ StartSpinAttack");
+
+        if (_skillManager != null &&
+            !_skillManager.IsUnlocked("SpinAttack"))
+        {
+            Debug.Log("‡A SpinAttack –¢‰ğ•ú");
+            return;
+        }
+
+        Debug.Log("‡B ƒXƒLƒ‹‰ğ•úÏ‚İ");
+
+        if (_isDodging || _isParrying)
+        {
+            Debug.Log("‡C Œ»İg—p‚Å‚«‚È‚¢ó‘Ô");
+            return;
+        }
+
+        Debug.Log("‡D g—p‰Â”\");
+
+        if (_spinAttack == null)
+        {
+            Debug.Log("‡E SpinAttack ƒRƒ“ƒ|[ƒlƒ“ƒg‚ªŒ©‚Â‚©‚ç‚È‚¢");
+            return;
+        }
+
+        Debug.Log("‡F SpinAttack.TryStart()‚ğŒÄ‚Ñ‚Ü‚·");
+
+        bool result = _spinAttack.TryStart();
+
+        Debug.Log("‡G TryStartŒ‹‰Ê : " + result);
     }
 }

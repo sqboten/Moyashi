@@ -135,6 +135,8 @@ GameObject:
   - component: {fileID: 22693630}
   - component: {fileID: 22693636}
   - component: {fileID: 22693637}
+  - component: {fileID: 22693638}
+  - component: {fileID: 22693639}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -161,6 +163,8 @@ MonoBehaviour:
   dodgeStaminaCost: 20
   parryDuration: 0.3
   parryStaminaCost: 15
+  spinAttackStaminaCost: 20
+  spinAttackDuration: 0.3
 --- !u!136 &22693631
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -295,13 +299,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be1dc6311ddce2543948ed5436a4708f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
-  maxHP: 50
-  attackPower: 10000
+  maxHP: 100
+  attackPower: 50
   maxStamina: 50
   staminaRecovery: 5
   level: 1
   maxLevel: 80
   water: 0
+  gameOverPanel: {fileID: 0}
+  gameOverDisplayTime: 3
+  mainMenuSceneName: MainMenu
 --- !u!114 &22693637
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -319,13 +326,53 @@ MonoBehaviour:
   comboInputTime: 0.5
   attackMoveSpeed: 3
   maxComboCount: 3
-  attackRange: 1.5
-  attackWidth: 4
+  attackRange: 1.3
+  attackWidth: 3
   attackDepth: 2
   enemyLayer:
     serializedVersion: 2
     m_Bits: 64
   attackStaminaCost: 10
+  chargeStartTime: 0.4
+  chargeStaminaPerSecond: 15
+  chargeMoveSpeed: 1
+  chargeAttackRange: 1.5
+  chargeAttackWidth: 4.2
+  chargeAttackDepth: 2.5
+--- !u!114 &22693638
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 22693629}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50368a3ef9ac0b947b7f30042eae367d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpinAttack
+  staminaCost: 20
+  spinDuration: 0.5
+  attackRadius: 2.5
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 64
+--- !u!114 &22693639
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 22693629}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8efce3bf45016b54db2453725bb1d833, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RangedAttack
+  attackRange: 5.5
+  attackWidth: 1
+  hpCostPercent: 0.2
+  damageMultiplier: 0.5
 --- !u!1 &47622831
 GameObject:
   m_ObjectHideFlags: 0
@@ -365,6 +412,8 @@ MonoBehaviour:
   bossSpawnInterval: 3
   bossMaxEnemyCount: 5
   spawnAreaSize: {x: 40, y: 0, z: 40}
+  player: {fileID: 22693634}
+  minimumSpawnDistance: 8
 --- !u!4 &47622833
 Transform:
   m_ObjectHideFlags: 0
@@ -395,12 +444,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaveManager
   maxWave: 6
-  normalTime: 5
+  normalTime: 180
   bossStartDelay: 3
   nextWaveDelay: 3
   enemySpawner: {fileID: 47622832}
   bossPrefab: {fileID: 530176995768660855, guid: 074bfb36c68234345b24dcadcdcbbbc1, type: 3}
-  bossSpawnPoint: {fileID: 1385039799}
 --- !u!1 &133291917
 GameObject:
   m_ObjectHideFlags: 0

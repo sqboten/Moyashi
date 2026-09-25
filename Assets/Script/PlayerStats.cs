@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections;
+
 public class PlayerStats : MonoBehaviour
 {
     [Header("Base Stats")]
@@ -19,8 +21,16 @@ public class PlayerStats : MonoBehaviour
     private int killCount;
     public int KillCount => killCount;
 
+    [Header("Game Over")]
+    [SerializeField] private GameObject gameOverPanel;
+    [SerializeField] private float gameOverDisplayTime = 3f;
+    [SerializeField] private string mainMenuSceneName = "MainMenuScene";
+
     private float currentHP;
     private float currentStamina;
+
+    private bool _isCharging;
+    private bool _isDead;
 
     public float MaxHP => maxHP;
     public float CurrentHP => currentHP;
@@ -39,6 +49,11 @@ public class PlayerStats : MonoBehaviour
     {
         currentHP = maxHP;
         currentStamina = maxStamina;
+
+        if (gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(false);
+        }
     }
 
     private void Update()
@@ -46,9 +61,19 @@ public class PlayerStats : MonoBehaviour
         RecoverStamina();
     }
 
+    public void SetCharging(bool isCharging)
+    {
+        _isCharging = isCharging;
+    }
+
     public void TakeDamage(float damage)
     {
         if (damage <= 0f)
+        {
+            return;
+        }
+
+        if (_isDead)
         {
             return;
         }
@@ -81,6 +106,16 @@ public class PlayerStats : MonoBehaviour
 
     private void RecoverStamina()
     {
+        if (_isDead)
+        {
+            return;
+        }
+
+        if (_isCharging)
+        {
+            return;
+        }
+
         if (currentStamina >= maxStamina)
         {
             currentStamina = maxStamina;
@@ -140,12 +175,10 @@ public class PlayerStats : MonoBehaviour
     {
         level++;
 
-        // ステータス上昇
         maxHP += 40f;
         attackPower += 30f;
         maxStamina += 30f;
 
-        // レベルアップ時はHPとスタミナを最大まで回復
         currentHP = maxHP;
         currentStamina = maxStamina;
 
@@ -156,16 +189,39 @@ public class PlayerStats : MonoBehaviour
         Debug.Log("Max Stamina : " + maxStamina);
         Debug.Log("Water : " + water);
     }
+
     public void AddKillCount()
     {
         killCount++;
     }
+
     private void Die()
     {
-        Debug.Log("Player Dead");
+        if (_isDead)
+        {
+            return;
+        }
+
+        _isDead = true;
+
+        Debug.Log("Game Over");
+
+        if (gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(true);
+        }
+
+        StartCoroutine(GameOverSequence());
+    }
+
+    private IEnumerator GameOverSequence()
+    {
+        yield return new WaitForSeconds(
+            gameOverDisplayTime
+        );
 
         SceneManager.LoadScene(
-            SceneManager.GetActiveScene().name
+            mainMenuSceneName
         );
     }
 }

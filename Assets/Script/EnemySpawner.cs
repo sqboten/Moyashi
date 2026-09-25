@@ -18,15 +18,23 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private int bossMaxEnemyCount = 10;
 
     [Header("Spawn Area")]
-    [SerializeField] private Vector3 spawnAreaSize = new Vector3(20f, 0f, 20f);
+    [SerializeField]
+    private Vector3 spawnAreaSize =
+        new Vector3(20f, 0f, 20f);
+
+    [Header("Player Spawn Distance")]
+    [SerializeField] private Transform player;
+    [SerializeField] private float minimumSpawnDistance = 8f;
 
     private float spawnTimer;
 
-    private List<GameObject> spawnedEnemies = new List<GameObject>();
+    private List<GameObject> spawnedEnemies =
+        new List<GameObject>();
 
     private bool isBossPhase;
     private bool isStopped;
     private int currentWave = 1;
+
     private void Start()
     {
         SpawnEnemies(initialSpawnCount);
@@ -38,6 +46,7 @@ public class EnemySpawner : MonoBehaviour
         {
             return;
         }
+
         RemoveDestroyedEnemies();
 
         spawnTimer += Time.deltaTime;
@@ -55,10 +64,12 @@ public class EnemySpawner : MonoBehaviour
             SpawnEnemies(currentSpawnCount);
         }
     }
+
     public void SetCurrentWave(int wave)
     {
         currentWave = wave;
     }
+
     private void SpawnEnemies(int count)
     {
         int currentEnemyCount = spawnedEnemies.Count;
@@ -79,7 +90,8 @@ public class EnemySpawner : MonoBehaviour
 
         for (int i = 0; i < spawnAmount; i++)
         {
-            Vector3 spawnPosition = GetRandomSpawnPosition();
+            Vector3 spawnPosition =
+                GetRandomSpawnPosition();
 
             GameObject enemy = Instantiate(
                 enemyPrefab,
@@ -87,7 +99,8 @@ public class EnemySpawner : MonoBehaviour
                 Quaternion.identity
             );
 
-            Enemy enemyComponent = enemy.GetComponent<Enemy>();
+            Enemy enemyComponent =
+                enemy.GetComponent<Enemy>();
 
             if (enemyComponent != null)
             {
@@ -147,17 +160,59 @@ public class EnemySpawner : MonoBehaviour
 
     private Vector3 GetRandomSpawnPosition()
     {
-        float x = Random.Range(
+        const int maxAttempts = 30;
+
+        for (int i = 0; i < maxAttempts; i++)
+        {
+            float x = Random.Range(
+                -spawnAreaSize.x / 2f,
+                spawnAreaSize.x / 2f
+            );
+
+            float z = Random.Range(
+                -spawnAreaSize.z / 2f,
+                spawnAreaSize.z / 2f
+            );
+
+            Vector3 spawnPosition =
+                transform.position +
+                new Vector3(x, 0f, z);
+
+            if (player == null)
+            {
+                return spawnPosition;
+            }
+
+            float distance =
+                Vector3.Distance(
+                    player.position,
+                    spawnPosition
+                );
+
+            if (distance >= minimumSpawnDistance)
+            {
+                return spawnPosition;
+            }
+        }
+
+        // èåèÇñûÇΩÇ∑èÍèäÇ™å©Ç¬Ç©ÇÁÇ»Ç©Ç¡ÇΩèÍçá
+        // ç≈å„Ç…ÉâÉìÉ_ÉÄà íuÇï‘Ç∑
+        float fallbackX = Random.Range(
             -spawnAreaSize.x / 2f,
             spawnAreaSize.x / 2f
         );
 
-        float z = Random.Range(
+        float fallbackZ = Random.Range(
             -spawnAreaSize.z / 2f,
             spawnAreaSize.z / 2f
         );
 
-        return transform.position + new Vector3(x, 0f, z);
+        return transform.position +
+            new Vector3(fallbackX, 0f, fallbackZ);
+    }
+    public Vector3 GetBossSpawnPosition()
+    {
+        return GetRandomSpawnPosition();
     }
 
     public void StopSpawner()

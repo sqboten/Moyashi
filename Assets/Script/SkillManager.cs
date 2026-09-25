@@ -123,4 +123,63 @@ public class SkillManager : MonoBehaviour
             }
         }
     }
+    public void ResetSkills()
+    {
+        string[] skills =
+        {
+        "Dodge",
+        "Parry",
+        "ChargeAttack",
+        "SpinAttack",
+        "RangedAttack"
+    };
+
+        int refundPoint = 0;
+
+        SkillButton[] skillButtons =
+            FindObjectsByType<SkillButton>(
+                FindObjectsSortMode.None
+            );
+
+        foreach (string skill in skills)
+        {
+            if (!IsUnlocked(skill))
+            {
+                continue;
+            }
+
+            foreach (SkillButton skillButton in skillButtons)
+            {
+                if (skillButton.SkillName == skill)
+                {
+                    refundPoint += skillButton.RequiredPoint;
+                    break;
+                }
+            }
+
+            PlayerPrefs.SetInt(
+                "Skill_" + skill,
+                0
+            );
+        }
+
+        int currentPoint = SkillPoint;
+
+        currentPoint += refundPoint;
+
+        PlayerPrefs.SetInt(
+            SkillPointKey,
+            currentPoint
+        );
+
+        PlayerPrefs.Save();
+
+        // ÉÅÉÇÉäè„ÇÃâï˙èÛë‘Ç‡çXêV
+        LoadUnlockedSkills();
+
+        Debug.Log(
+            "Skill Reset / Refund Point : " +
+            refundPoint
+        );
+    }
 }

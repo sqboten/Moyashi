@@ -14,7 +14,8 @@ public class SkillButton : MonoBehaviour
     [SerializeField] private Button button;
 
     private SkillManager skillManager;
-
+    public string SkillName => skillName;
+    public int RequiredPoint => requiredPoint;
     private void Start()
     {
         skillManager =
@@ -42,12 +43,11 @@ public class SkillButton : MonoBehaviour
         }
     }
 
-    private void UpdateUI()
+    public void UpdateUI()
     {
         if (skillNameText != null)
         {
-            skillNameText.text =
-                skillName;
+            skillNameText.text = skillName;
         }
 
         if (requiredPointText != null)
@@ -63,6 +63,7 @@ public class SkillButton : MonoBehaviour
 
         if (skillManager.IsUnlocked(skillName))
         {
+            // ‰ğ•úÏ‚İ
             if (button != null)
             {
                 button.interactable = false;
@@ -70,8 +71,21 @@ public class SkillButton : MonoBehaviour
 
             if (requiredPointText != null)
             {
+                requiredPointText.text = "‰ğ•úÏ‚İ";
+            }
+        }
+        else
+        {
+            // –¢‰ğ•ú
+            if (button != null)
+            {
+                button.interactable = true;
+            }
+
+            if (requiredPointText != null)
+            {
                 requiredPointText.text =
-                    "‰ğ•úÏ‚İ";
+                    requiredPoint + " pt";
             }
         }
     }
