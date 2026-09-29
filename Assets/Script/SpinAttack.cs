@@ -90,8 +90,15 @@ public class SpinAttack : MonoBehaviour
 
             if (enemy != null)
             {
-
                 enemy.TakeDamage(spinDamage);
+
+                if (HitEffectManager.Instance != null)
+                {
+                    HitEffectManager.Instance.PlayHitEffect(
+                        hitTarget.ClosestPoint(transform.position)
+                    );
+                }
+
                 continue;
             }
 
@@ -100,8 +107,14 @@ public class SpinAttack : MonoBehaviour
 
             if (boss != null)
             {
-
                 boss.TakeDamage(spinDamage);
+
+                if (HitEffectManager.Instance != null)
+                {
+                    HitEffectManager.Instance.PlayHitEffect(
+                        hitTarget.ClosestPoint(transform.position)
+                    );
+                }
             }
         }
     }

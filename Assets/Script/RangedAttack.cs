@@ -12,6 +12,9 @@ public class RangedAttack : MonoBehaviour
     [Header("Damage")]
     [SerializeField] private float damageMultiplier = 0.5f;
 
+    [Header("Effect")]
+    [SerializeField] private GameObject rangedAttackEffect;
+
     private PlayerStats _playerStats;
     private SkillManager _skillManager;
     private PlayerInputActions _inputActions;
@@ -82,6 +85,8 @@ public class RangedAttack : MonoBehaviour
                 damageMultiplier
             );
 
+        PlayRangedAttackEffect();
+
         Debug.Log(
             "Ranged Attack / HP Cost : " +
             hpCost +
@@ -115,24 +120,53 @@ public class RangedAttack : MonoBehaviour
         foreach (RaycastHit hit in hits)
         {
             Enemy enemy =
-                hit.collider.GetComponent<Enemy>();
+                hit.collider.GetComponentInParent<Enemy>();
 
             if (enemy != null)
             {
                 enemy.TakeDamage(damage);
+
+                if (HitEffectManager.Instance != null)
+                {
+                    HitEffectManager.Instance.PlayHitEffect(
+                        hit.collider.ClosestPoint(transform.position)
+                    );
+                }
+
                 continue;
             }
 
             Boss boss =
-                hit.collider.GetComponent<Boss>();
+                hit.collider.GetComponentInParent<Boss>();
 
             if (boss != null)
             {
                 boss.TakeDamage(damage);
+
+                if (HitEffectManager.Instance != null)
+                {
+                    HitEffectManager.Instance.PlayHitEffect(
+                        hit.collider.ClosestPoint(transform.position)
+                    );
+                }
             }
         }
     }
+    private void PlayRangedAttackEffect()
+    {
+        if (rangedAttackEffect == null)
+        {
+            return;
+        }
 
+        GameObject effect = Instantiate(
+            rangedAttackEffect,
+            transform.position,
+            transform.rotation
+        );
+
+        effect.transform.forward = transform.forward;
+    }
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.blue;

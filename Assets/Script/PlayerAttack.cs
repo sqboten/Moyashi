@@ -283,21 +283,30 @@ public class PlayerAttack : MonoBehaviour
 
             if (enemy != null)
             {
-                enemy.TakeDamage(
-                    _playerStats.AttackPower
-                );
+                enemy.TakeDamage(_playerStats.AttackPower);
+
+                if (HitEffectManager.Instance != null)
+                {
+                    HitEffectManager.Instance.PlayHitEffect(
+                        hitTarget.ClosestPoint(transform.position)
+                    );
+                }
 
                 continue;
             }
 
-            Boss boss =
-                hitTarget.GetComponent<Boss>();
+            Boss boss = hitTarget.GetComponent<Boss>();
 
             if (boss != null)
             {
-                boss.TakeDamage(
-                    _playerStats.AttackPower
-                );
+                boss.TakeDamage(_playerStats.AttackPower);
+
+                if (HitEffectManager.Instance != null)
+                {
+                    HitEffectManager.Instance.PlayHitEffect(
+                        hitTarget.ClosestPoint(transform.position)
+                    );
+                }
             }
         }
     }
@@ -436,6 +445,14 @@ public class PlayerAttack : MonoBehaviour
             if (enemy != null)
             {
                 enemy.TakeDamage(damage);
+
+                if (HitEffectManager.Instance != null)
+                {
+                    HitEffectManager.Instance.PlayHitEffect(
+                        hitTarget.ClosestPoint(transform.position)
+                    );
+                }
+
                 continue;
             }
 
@@ -445,6 +462,13 @@ public class PlayerAttack : MonoBehaviour
             if (boss != null)
             {
                 boss.TakeDamage(damage);
+
+                if (HitEffectManager.Instance != null)
+                {
+                    HitEffectManager.Instance.PlayHitEffect(
+                        hitTarget.ClosestPoint(transform.position)
+                    );
+                }
             }
         }
     }
