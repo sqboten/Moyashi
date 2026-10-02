@@ -8,13 +8,19 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private float comboInputTime = 0.5f;
     [SerializeField] private float attackMoveSpeed = 3f;
 
+    [Header("Normal Attack Effect")]
+    [SerializeField] private GameObject normalAttackEffect;
+    [SerializeField] private Transform attackEffectPoint;
+    [SerializeField]
+    private Vector3 attackEffectRotationOffset =
+        new Vector3(-90f, 0f, 0f);
+
     [Header("Combo Settings")]
     [SerializeField] private int maxComboCount = 3;
 
-    [Header("Attack Hit")]
+    [Header("Normal Attack Hit")]
     [SerializeField] private float attackRange = 1.5f;
-    [SerializeField] private float attackWidth = 3f;
-    [SerializeField] private float attackDepth = 2f;
+    [SerializeField] private float attackAngle = 90f;
     [SerializeField] private LayerMask enemyLayer;
 
     [Header("Stamina")]
@@ -27,8 +33,7 @@ public class PlayerAttack : MonoBehaviour
 
     [Header("Charge Attack Hit")]
     [SerializeField] private float chargeAttackRange = 2.5f;
-    [SerializeField] private float chargeAttackWidth = 4f;
-    [SerializeField] private float chargeAttackDepth = 3f;
+    [SerializeField] private float chargeAttackAngle = 120f;
 
     private Rigidbody _rigidbody;
     private PlayerInputActions _inputActions;
@@ -210,7 +215,32 @@ public class PlayerAttack : MonoBehaviour
 
         Debug.Log("Attack " + _comboCount);
 
+        // 通常攻撃エフェクト
+        PlayNormalAttackEffect();
+
         AttackHit();
+    }
+
+    private void PlayNormalAttackEffect()
+    {
+        if (normalAttackEffect == null)
+        {
+            return;
+        }
+
+        Transform spawnPoint = attackEffectPoint != null
+            ? attackEffectPoint
+            : transform;
+
+        Quaternion rotation =
+            transform.rotation *
+            Quaternion.Euler(attackEffectRotationOffset);
+
+        Instantiate(
+            normalAttackEffect,
+            spawnPoint.position,
+            rotation
+        );
     }
 
     private void EndAttack()
@@ -258,26 +288,25 @@ public class PlayerAttack : MonoBehaviour
         _comboTimer = 0f;
     }
 
+    // =========================
+    // 通常攻撃 扇形判定
+    // =========================
+
     private void AttackHit()
     {
-        Vector3 attackPosition =
-            transform.position + transform.forward * attackRange;
-
-        Vector3 halfExtents = new Vector3(
-            attackWidth / 2f,
-            1f,
-            attackDepth / 2f
-        );
-
-        Collider[] hitTargets = Physics.OverlapBox(
-            attackPosition,
-            halfExtents,
-            transform.rotation,
+        Collider[] hitTargets = Physics.OverlapSphere(
+            transform.position,
+            attackRange,
             enemyLayer
         );
 
         foreach (Collider hitTarget in hitTargets)
         {
+            if (!IsInsideAttackAngle(hitTarget, attackAngle))
+            {
+                continue;
+            }
+
             Enemy enemy =
                 hitTarget.GetComponent<Enemy>();
 
@@ -295,7 +324,8 @@ public class PlayerAttack : MonoBehaviour
                 continue;
             }
 
-            Boss boss = hitTarget.GetComponent<Boss>();
+            Boss boss =
+                hitTarget.GetComponent<Boss>();
 
             if (boss != null)
             {
@@ -309,6 +339,33 @@ public class PlayerAttack : MonoBehaviour
                 }
             }
         }
+    }
+
+    // =========================
+    // 扇形内判定
+    // =========================
+
+    private bool IsInsideAttackAngle(
+        Collider target,
+        float attackAngle)
+    {
+        Vector3 direction =
+            target.ClosestPoint(transform.position)
+            - transform.position;
+
+        direction.y = 0f;
+
+        if (direction.sqrMagnitude <= 0.001f)
+        {
+            return true;
+        }
+
+        direction.Normalize();
+
+        float angle =
+            Vector3.Angle(transform.forward, direction);
+
+        return angle <= attackAngle * 0.5f;
     }
 
     // =========================
@@ -345,6 +402,7 @@ public class PlayerAttack : MonoBehaviour
 
         Debug.Log("Charge Start");
     }
+
     private void UpdateCharge()
     {
         _chargeStaminaTimer += Time.deltaTime;
@@ -418,27 +476,27 @@ public class PlayerAttack : MonoBehaviour
             moveDirection * chargeMoveSpeed;
     }
 
+    // =========================
+    // チャージ攻撃 扇形判定
+    // =========================
+
     private void ChargeAttackHit(int damage)
     {
-        Vector3 attackPosition =
-            transform.position +
-            transform.forward * chargeAttackRange;
-
-        Vector3 halfExtents = new Vector3(
-            chargeAttackWidth / 2f,
-            1f,
-            chargeAttackDepth / 2f
-        );
-
-        Collider[] hitTargets = Physics.OverlapBox(
-            attackPosition,
-            halfExtents,
-            transform.rotation,
+        Collider[] hitTargets = Physics.OverlapSphere(
+            transform.position,
+            chargeAttackRange,
             enemyLayer
         );
 
         foreach (Collider hitTarget in hitTargets)
         {
+            if (!IsInsideAttackAngle(
+                hitTarget,
+                chargeAttackAngle))
+            {
+                continue;
+            }
+
             Enemy enemy =
                 hitTarget.GetComponent<Enemy>();
 
@@ -473,54 +531,70 @@ public class PlayerAttack : MonoBehaviour
         }
     }
 
+    // =========================
+    // Gizmos
+    // =========================
+
     private void OnDrawGizmosSelected()
     {
-        // 通常攻撃範囲
-        Vector3 attackPosition =
-            transform.position +
-            transform.forward * attackRange;
-
-        Vector3 halfExtents = new Vector3(
-            attackWidth / 2f,
-            1f,
-            attackDepth / 2f
+        // 通常攻撃
+        DrawAttackGizmo(
+            attackRange,
+            attackAngle
         );
 
-        Gizmos.matrix = Matrix4x4.TRS(
-            attackPosition,
-            transform.rotation,
-            Vector3.one
+        // チャージ攻撃
+        DrawAttackGizmo(
+            chargeAttackRange,
+            chargeAttackAngle
+        );
+    }
+
+    private void DrawAttackGizmo(
+        float range,
+        float angle)
+    {
+        Vector3 forward =
+            transform.forward;
+
+        Quaternion leftRotation =
+            Quaternion.Euler(
+                0f,
+                -angle * 0.5f,
+                0f
+            );
+
+        Quaternion rightRotation =
+            Quaternion.Euler(
+                0f,
+                angle * 0.5f,
+                0f
+            );
+
+        Vector3 leftDirection =
+            leftRotation * forward;
+
+        Vector3 rightDirection =
+            rightRotation * forward;
+
+        Gizmos.DrawWireSphere(
+            transform.position,
+            range
         );
 
-        Gizmos.DrawWireCube(
-            Vector3.zero,
-            halfExtents * 2f
+        Gizmos.DrawLine(
+            transform.position,
+            transform.position + leftDirection * range
         );
 
-        Gizmos.matrix = Matrix4x4.identity;
-
-        // チャージ攻撃範囲
-        Vector3 chargeAttackPosition =
-            transform.position +
-            transform.forward * chargeAttackRange;
-
-        Vector3 chargeHalfExtents = new Vector3(
-            chargeAttackWidth / 2f,
-            1f,
-            chargeAttackDepth / 2f
+        Gizmos.DrawLine(
+            transform.position,
+            transform.position + rightDirection * range
         );
 
-        Gizmos.matrix = Matrix4x4.TRS(
-            chargeAttackPosition,
-            transform.rotation,
-            Vector3.one
+        Gizmos.DrawLine(
+            transform.position,
+            transform.position + forward * range
         );
-
-        Gizmos.DrawWireCube(
-            Vector3.zero,
-            chargeHalfExtents * 2f
-        );
-
-        Gizmos.matrix = Matrix4x4.identity;
     }
 }

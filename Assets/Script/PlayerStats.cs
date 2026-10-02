@@ -163,10 +163,10 @@ public class PlayerStats : MonoBehaviour
 
     private float GetRequiredWater()
     {
-        int levelGroup = (level - 1) / 3;
+        int levelGroup = (level - 1) / 5;
 
         float requiredWater =
-            25f * Mathf.Pow(1.5f, levelGroup);
+            25f * Mathf.Pow(1.3f, levelGroup);
 
         return Mathf.Ceil(requiredWater);
     }
@@ -176,7 +176,7 @@ public class PlayerStats : MonoBehaviour
         level++;
 
         maxHP += 40f;
-        attackPower += 30f;
+        attackPower += 40f;
         maxStamina += 30f;
 
         currentHP = maxHP;

@@ -80,7 +80,7 @@ public class SpinAttack : MonoBehaviour
         );
 
         int spinDamage = Mathf.CeilToInt(
-            _playerStats.AttackPower * 1.5f
+            _playerStats.AttackPower * 2f
         );
 
         foreach (Collider hitTarget in hitTargets)

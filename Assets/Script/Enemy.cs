@@ -198,7 +198,7 @@ public class Enemy : MonoBehaviour
     }
     public void SetWaveStats(int wave)
     {
-        maxHP = baseHP + (wave - 1) * 500f;
+        maxHP = baseHP + (wave - 1) * 450f;
         attackPower = baseAttackPower + (wave - 1) * 30f;
 
         currentHP = maxHP;
